@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Support Toolkit</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+<header>Support Toolkit</header>
+
+<main>
+    <div id="trackingDisabled" class="tracking-disabled hidden">
+        <h3>Tracking disabled</h3>
+        <p>Enable tracking in settings to display metrics</p>
+        <button id="openSettingsFromDisabled">Open Settings</button>
+    </div>
+
+    <div id="trackingContent">
+        <div class="kpi-card">
+            <div class="kpi-label">Replies per Hour</div>
+            <div id="rph" class="kpi-value">—</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-label">Total Today</div>
+            <div id="today" class="kpi-value">0</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-label">Since Start</div>
+            <div id="sinceStart" class="kpi-value">0</div>
+        </div>
+
+        <div class="kpi-card">
+            <div class="kpi-label">Duration</div>
+            <div id="dur" class="kpi-value">—</div>
+            <div id="since"></div>
+        </div>
+
+        <div class="buttons">
+            <button id="pauseBtn">Pause</button>
+        </div>
+
+        <button id="clearBtn">Clear</button>
+        <button id="openSettings">Open Settings</button>
+
+    </div>
+</main>
+
+<script src="popup.js"></script>
+</body>
+</html>
