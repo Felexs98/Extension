@@ -2,6 +2,7 @@
   // Глобальные флаги рантайма для управления фичами.
   let charityRestEnabled = false;
   let enableClickTracking = true;
+  let enableFraudTracking = false;
   let globalMessageObserver = null;
   // Общие helper-функции, подключенные из utility-скриптов в manifest.
   const {
@@ -19,6 +20,7 @@
     getOrderIdFromURL,
     getOrderIdFromDOM,
     getTicketId,
+    getTicketIdFromContext,
     getCurrentTicketLinkUrl
   } = window.ExtTicketOrderLocators || {};
   const {
@@ -70,6 +72,13 @@
     }
 
     enableClickTracking = cfg.trackingEnabled !== false;
+    enableFraudTracking = cfg.fraudTrackingEnabled === true;
+    window.ExtNavbarStats?.refresh?.();
+  }
+
+  function applyFraudTrackingChange(enabled) {
+    enableFraudTracking = enabled === true;
+    window.ExtNavbarStats?.refresh?.();
   }
 
   const FILTERS = {
@@ -247,7 +256,7 @@
       attachmentBtn.style.opacity = "1";
       tooltipTimeout = setTimeout(() => {
         tooltipElement = document.createElement("div");
-        tooltipElement.textContent = "Attachments";
+        tooltipElement.textContent = (window.ExtLocale && window.ExtLocale.pick) ? window.ExtLocale.pick("Attachments", "Вложения") : "Attachments";
         tooltipElement.style.cssText = `
           position: absolute;
           background: rgb(39, 40, 48);
@@ -358,6 +367,7 @@
       [
         "showContacts",
         "trackingEnabled",
+        "fraudTrackingEnabled",
         "hideSystem",
         "hideTranslateLanguages",
         "charityRestEnabled"
@@ -379,10 +389,14 @@
 
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area === "sync") {
+      if (changes.fraudTrackingEnabled) {
+        applyFraudTrackingChange(changes.fraudTrackingEnabled.newValue);
+      }
       chrome.storage.sync.get(
           [
             "showContacts",
             "trackingEnabled",
+            "fraudTrackingEnabled",
             "hideSystem",
             "hideTranslateLanguages",
             "attachmentButtonEnabled",
@@ -773,7 +787,16 @@
   function initReplyTracking() {
     window.ExtTracking?.initReplyTracking?.({
       getTicketId,
-      isTrackingEnabled: () => enableClickTracking
+      getTicketIdFromContext,
+      isTrackingEnabled: () => enableClickTracking,
+      isFraudTrackingEnabled: () => enableFraudTracking
+    });
+  }
+
+  function initNavbarStats() {
+    window.ExtNavbarStats?.init?.({
+      isTrackingEnabled: () => enableClickTracking,
+      isFraudTrackingEnabled: () => enableFraudTracking
     });
   }
 
@@ -784,4 +807,5 @@
   // Старт глобального трекинга, не привязанного к конкретной странице.
   initAgentStatusAuto();
   initReplyTracking();
+  initNavbarStats();
 })();

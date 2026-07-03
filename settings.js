@@ -1,6 +1,7 @@
 const settingIds = [
     "showContacts",
     "trackingEnabled",
+    "fraudTrackingEnabled",
     "hideSystem",
     "hideTranslateLanguages",
     "attachmentButtonEnabled",
@@ -23,6 +24,59 @@ const DEFAULT_DOUBLE_ORIGIN_INDIA = [
     "Lavish Livings International FZE"
 ].join(", ");
 const DEFAULT_DOUBLE_ORIGIN_TURKEY = "Bugan Group LTD";
+const TRACKING_HOST = "babylone.joom.it";
+const HOUR_MS = 3600_000;
+
+function getTodayRangeMs(useMsk = false) {
+    if (!useMsk) {
+        const now = new Date();
+        const start = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        return { start, end: start + 24 * HOUR_MS };
+    }
+    const mskOffsetMs = 3 * HOUR_MS;
+    const shiftedNow = new Date(Date.now() + mskOffsetMs);
+    const mskStartUtc =
+        Date.UTC(
+            shiftedNow.getUTCFullYear(),
+            shiftedNow.getUTCMonth(),
+            shiftedNow.getUTCDate()
+        ) - mskOffsetMs;
+    return { start: mskStartUtc, end: mskStartUtc + 24 * HOUR_MS };
+}
+
+function clearTodayStats(cb) {
+    chrome.storage.sync.get(["totalTodayByMsk"], syncCfg => {
+        const { start, end } = getTodayRangeMs(syncCfg.totalTodayByMsk === true);
+        chrome.storage.local.get(["stats", "lastClickByTicket"], res => {
+            const stats = { ...(res.stats || {}) };
+            const lastClickByTicket = { ...(res.lastClickByTicket || {}) };
+            const hostPrefix = `${TRACKING_HOST}::`;
+
+            for (const key in stats) {
+                if (!key.startsWith(hostPrefix)) continue;
+                for (const hourISO in stats[key]) {
+                    const t = Date.parse(hourISO + ":00:00.000Z");
+                    if (t >= start && t < end) {
+                        delete stats[key][hourISO];
+                    }
+                }
+                if (Object.keys(stats[key]).length === 0) {
+                    delete stats[key];
+                }
+            }
+
+            for (const key in lastClickByTicket) {
+                if (lastClickByTicket[key] >= start) {
+                    delete lastClickByTicket[key];
+                }
+            }
+
+            chrome.storage.local.set({ stats, lastClickByTicket }, () => {
+                if (typeof cb === "function") cb();
+            });
+        });
+    });
+}
 
 function updateTotalTodayModeVisual() {
     const toggle = document.getElementById("totalTodayByMsk");
@@ -37,8 +91,13 @@ function updateTotalTodayModeVisual() {
 function updateDependentVisibility() {
     const trackingToggle = document.getElementById("trackingEnabled");
     const totalTodayRow = document.getElementById("totalTodayRow");
+    const clearTodayRow = document.getElementById("clearTodayRow");
+    const trackingOn = trackingToggle?.checked !== false;
     if (trackingToggle && totalTodayRow) {
-        totalTodayRow.style.display = trackingToggle.checked ? "flex" : "none";
+        totalTodayRow.style.display = trackingOn ? "flex" : "none";
+    }
+    if (clearTodayRow) {
+        clearTodayRow.hidden = !trackingOn;
     }
 
     const doubleOriginToggle = document.getElementById("doubleOriginEnabled");
@@ -157,6 +216,8 @@ function initSettings() {
 
             if (id === "charityRestEnabled") {
                 el.checked = cfg.charityRestEnabled === true;
+            } else if (id === "fraudTrackingEnabled") {
+                el.checked = cfg.fraudTrackingEnabled === true;
             } else {
                 el.checked =
                     id === "showContacts" ||
@@ -237,10 +298,36 @@ function initSettings() {
 
     renderLanguages();
 
+    const clearTodayBtn = document.getElementById("clearTodayBtn");
+    if (clearTodayBtn) {
+        const t = (k) => (window.PageI18n ? window.PageI18n.t(k) : k);
+        clearTodayBtn.addEventListener("click", () => {
+            if (clearTodayBtn.disabled) return;
+            clearTodayBtn.disabled = true;
+            clearTodayStats(() => {
+                const doneLabel = t("clearTodayDone");
+                const defaultLabel = t("clearTodayStats");
+                clearTodayBtn.textContent = doneLabel;
+                setTimeout(() => {
+                    clearTodayBtn.textContent = defaultLabel;
+                    clearTodayBtn.disabled = false;
+                }, 1800);
+            });
+        });
+    }
+
+    const openSessionChartBtn = document.getElementById("openSessionChartBtn");
+    if (openSessionChartBtn) {
+        openSessionChartBtn.addEventListener("click", () => {
+            chrome.tabs.create({ url: chrome.runtime.getURL("session-chart.html") });
+        });
+    }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
     setTimeout(initSettings, 50);
+
+    const t = (k) => (window.PageI18n ? window.PageI18n.t(k) : k);
 
     const toggleBtn = document.getElementById("toggleLanguages");
     const languagesContainer = document.getElementById("languagesContainer");
@@ -248,11 +335,20 @@ document.addEventListener("DOMContentLoaded", () => {
     const toggleDoubleOriginBtn = document.getElementById("toggleDoubleOrigin");
     const doubleOriginContainer = document.getElementById("doubleOriginContainer");
 
+    // Show/Hide labels depend on expanded state, so they're set here (not via data-i18n alone).
+    const updateToggleTexts = () => {
+        if (toggleBtn && languagesContainer) {
+            toggleBtn.textContent = languagesContainer.classList.contains("expanded") ? t("hide") : t("show");
+        }
+        if (toggleDoubleOriginBtn && doubleOriginContainer) {
+            toggleDoubleOriginBtn.textContent = doubleOriginContainer.classList.contains("expanded") ? t("hide") : t("show");
+        }
+    };
+
     if (toggleBtn && languagesContainer) {
         toggleBtn.addEventListener("click", () => {
             languagesContainer.classList.toggle("expanded");
-            toggleBtn.textContent =
-                languagesContainer.classList.contains("expanded") ? "Hide" : "Show";
+            updateToggleTexts();
         });
     }
 
@@ -265,9 +361,21 @@ document.addEventListener("DOMContentLoaded", () => {
     if (toggleDoubleOriginBtn && doubleOriginContainer) {
         toggleDoubleOriginBtn.addEventListener("click", () => {
             doubleOriginContainer.classList.toggle("expanded");
-            toggleDoubleOriginBtn.textContent =
-                doubleOriginContainer.classList.contains("expanded") ? "Hide" : "Show";
+            updateToggleTexts();
         });
     }
 
+    // Language selector (Auto / English / Русский) -> stored as uiLang.
+    const uiLangSelect = document.getElementById("uiLangSelect");
+    if (uiLangSelect) {
+        chrome.storage.sync.get(["uiLang"], (cfg) => {
+            uiLangSelect.value = (cfg && cfg.uiLang) || "auto";
+        });
+        uiLangSelect.addEventListener("change", () => {
+            chrome.storage.sync.set({ uiLang: uiLangSelect.value });
+        });
+    }
+
+    // Localize static DOM now and on every uiLang change; fix state-dependent labels after.
+    if (window.PageI18n) window.PageI18n.init(updateToggleTexts);
 });

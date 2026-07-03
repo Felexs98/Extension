@@ -2,6 +2,7 @@
 const HOUR_MS = 3600_000;
 const MINUTE_MS = 60_000;
 const SUPPORTED_TRACKING_HOSTS = new Set(["babylone.joom.it"]);
+const t = (k) => (window.PageI18n ? window.PageI18n.t(k) : k);
 
 // --- утилиты ---
 function tabsQuery(q){return new Promise(r=>chrome.tabs.query(q,t=>r(t||[])))}
@@ -15,7 +16,7 @@ function fmt2(n){return Number.isFinite(n)?(Math.round(n*100)/100).toString():"�
 function fmtDur(ms){
     if(!Number.isFinite(ms)||ms<=0) return "—";
     const h=Math.floor(ms/HOUR_MS), m=Math.floor((ms%HOUR_MS)/60000);
-    return `${h}ч ${m}м`;
+    return `${h}${t("durH")} ${m}${t("durM")}`;
 }
 
 function getTodayRangeMs(useMsk = false){
@@ -82,8 +83,10 @@ async function readState(){
     const { host, selector, siteKey, keyPrefix, isSupportedHost } = await getActiveContext();
     const { stats = {}, sessions = {} } = await storageGet(["stats","sessions"]);
     const buckets = aggregateBuckets(stats, keyPrefix);
+    const fraudKeyPrefix = `${host}::Fraud::`;
+    const fraudBuckets = aggregateBuckets(stats, fraudKeyPrefix);
     const session = sessions[siteKey] || null;
-    return { host, selector, siteKey, keyPrefix, buckets, session, isSupportedHost };
+    return { host, selector, siteKey, keyPrefix, buckets, fraudBuckets, session, isSupportedHost };
 }
 
 // --- расчёт сессии ---
@@ -119,8 +122,8 @@ function calcSession(session, buckets){
 // --- рендер UI ---
 async function render(){
     // Проверяем настройку трекинга
-    const { trackingEnabled, statusMode: syncStatus, statusModeAuto, totalTodayByMsk } =
-        await storageSyncGet(["trackingEnabled","statusMode","statusModeAuto","totalTodayByMsk"]);
+    const { trackingEnabled, fraudTrackingEnabled, statusMode: syncStatus, statusModeAuto, totalTodayByMsk } =
+        await storageSyncGet(["trackingEnabled","fraudTrackingEnabled","statusMode","statusModeAuto","totalTodayByMsk"]);
     const { statusModeLocal } = await storageGet(["statusModeLocal"]);
     let statusMode;
     if (statusModeAuto === true) {
@@ -132,9 +135,9 @@ async function render(){
     }
     const trackingContent = document.getElementById("trackingContent");
     const trackingDisabledMsg = document.getElementById("trackingDisabled");
+    const fraudTodayCard = document.getElementById("fraudTodayCard");
 
     if (trackingEnabled === false) {
-        // Скрываем интерфейс трекинга, показываем сообщение
         if (trackingContent) trackingContent.classList.add("hidden");
         if (trackingDisabledMsg) trackingDisabledMsg.classList.remove("hidden");
         return;
@@ -143,9 +146,13 @@ async function render(){
     // Показываем интерфейс трекинга, скрываем сообщение
     if (trackingContent) trackingContent.classList.remove("hidden");
     if (trackingDisabledMsg) trackingDisabledMsg.classList.add("hidden");
+    if (fraudTodayCard) {
+        fraudTodayCard.classList.toggle("hidden", fraudTrackingEnabled !== true);
+    }
 
-    const { buckets, session, isSupportedHost } = await readState();
+    const { buckets, fraudBuckets, session, isSupportedHost } = await readState();
     const today = sumToday(buckets, totalTodayByMsk === true);
+    const fraudToday = sumToday(fraudBuckets, totalTodayByMsk === true);
     const { clicks, dur, rph, state } = calcSession(session, buckets);
     const el = (id,v)=>{ const x = document.getElementById(id); if(x) x.textContent = v; };
     const pauseBtn = document.getElementById("pauseBtn");
@@ -153,16 +160,18 @@ async function render(){
 
     if (!isSupportedHost) {
         el("today", "0");
+        el("fraudToday", "0");
         el("sinceStart", "0");
         el("dur", "—");
         el("rph", "—");
-        el("since", "Open babylone.joom.it tab to use tracking metrics.");
+        el("since", t("openBabylone"));
         if (pauseBtn) pauseBtn.disabled = true;
         if (clearBtn) clearBtn.disabled = true;
         return;
     }
 
     el("today", String(today));
+    el("fraudToday", String(fraudToday));
     el("sinceStart", String(clicks));
     el("dur", fmtDur(dur));
     el("rph", fmt2(rph));
@@ -179,14 +188,14 @@ async function render(){
     }
 
     if(state === "idle"){
-        if(pauseBtn){ pauseBtn.textContent = "Resume"; pauseBtn.disabled = false; }
-        el("since", "Metric is idle — auto start in progress...");
+        if(pauseBtn){ pauseBtn.textContent = t("resume"); pauseBtn.disabled = false; }
+        el("since", t("metricIdle"));
     } else if(state === "paused"){
-        if(pauseBtn){ pauseBtn.textContent = "Resume"; pauseBtn.disabled = false; }
-        el("since", `Paused: ${new Date(session.pauseTs).toLocaleString()}`);
+        if(pauseBtn){ pauseBtn.textContent = t("resume"); pauseBtn.disabled = false; }
+        el("since", `${t("pausedAt")}${new Date(session.pauseTs).toLocaleString()}`);
     } else {
-        if(pauseBtn){ pauseBtn.textContent = "Pause"; pauseBtn.disabled = false; }
-        el("since", `Running since ${new Date(session.startTs).toLocaleString()}`);
+        if(pauseBtn){ pauseBtn.textContent = t("pause"); pauseBtn.disabled = false; }
+        el("since", `${t("runningSince")}${new Date(session.startTs).toLocaleString()}`);
     }
 }
 
@@ -264,6 +273,7 @@ function init(){
     if(settingsBtnFromDisabled) {
         settingsBtnFromDisabled.addEventListener("click", openSettings);
     }
+    if (window.PageI18n) window.PageI18n.init(render);
     render();
     setInterval(render, MINUTE_MS);
     
@@ -271,7 +281,7 @@ function init(){
     chrome.storage.onChanged.addListener((changes, areaName) => {
         if (
             areaName === "sync" &&
-            (changes.trackingEnabled || changes.statusModeAuto || changes.statusMode || changes.totalTodayByMsk)
+            (changes.trackingEnabled || changes.fraudTrackingEnabled || changes.statusModeAuto || changes.statusMode || changes.totalTodayByMsk)
         ) {
             render();
         }

@@ -26,6 +26,35 @@
   display: none;
 }
 
+.platform-label-notice {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin: 8px 0;
+  padding: 10px 12px;
+  border: 1px solid #f59e0b;
+  border-radius: 6px;
+  background: #fffbeb;
+  color: #1f2937;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.25;
+}
+
+.platform-label-notice__label {
+  color: #92400e;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.platform-label-notice__value {
+  color: #111827;
+  font-size: 14px;
+  font-weight: 700;
+}
+
 .merchant-charity-popup {
   position: fixed;
   z-index: 999999;
@@ -419,4 +448,125 @@
 .sheet-row-link {
   color: #2563eb;
   text-decoration: underline;
+}
+
+.ext-navbar-ticket-count {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 4px;
+  padding: 0 10px;
+  min-height: 32px;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #111827;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+  line-height: 1;
+  white-space: nowrap;
+  user-select: none;
+  transform-origin: center center;
+}
+
+.ext-navbar-ticket-count--bump {
+  animation: ext-navbar-count-bump 0.45s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+@keyframes ext-navbar-count-bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.14); }
+  100% { transform: scale(1); }
+}
+
+.ext-navbar-health {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06);
+}
+
+.ext-navbar-health--ok {
+  background: #16a34a;
+}
+
+.ext-navbar-health--bad {
+  background: #ef4444;
+}
+
+.ext-navbar-ticket-count__group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  position: relative;
+  transform-origin: center center;
+}
+
+.ext-navbar-ticket-count__sep {
+  color: #d1d5db;
+  margin: 0 2px;
+  font-weight: 500;
+}
+
+.ext-navbar-ticket-count__label-fraud {
+  color: #b45309;
+  font-weight: 500;
+}
+
+.ext-navbar-ticket-count__value-fraud {
+  position: relative;
+  color: #b45309;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  transition: color 0.35s ease;
+}
+
+.ext-navbar-ticket-count__value-fraud.ext-navbar-ticket-count__value--up {
+  color: #16a34a;
+}
+
+.ext-navbar-ticket-count__label {
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.ext-navbar-ticket-count__value {
+  position: relative;
+  color: #111827;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  transition: color 0.35s ease;
+}
+
+.ext-navbar-ticket-count__value--up {
+  color: #16a34a;
+}
+
+.ext-navbar-ticket-count__pop {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% - 4px);
+  color: #16a34a;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+  white-space: nowrap;
+  animation: ext-navbar-count-pop 0.65s ease-out forwards;
+}
+
+@keyframes ext-navbar-count-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 6px) scale(0.85);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -8px) scale(1);
+  }
 }

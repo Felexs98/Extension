@@ -61,9 +61,37 @@
     }
   }
 
-  function getTicketId() {
+  function getTicketIdFromContext(contextEl) {
+    const ticketIdFromHref = window.ExtIdParsers?.ticketIdFromHref;
+    if (!ticketIdFromHref || !contextEl) return null;
+
+    let node = contextEl;
+    for (let i = 0; i < 40 && node; i++) {
+      if (node.matches?.('a[href*="/tickets/"]')) {
+        const id = ticketIdFromHref(node.href || node.getAttribute("href"));
+        if (id) return id;
+      }
+
+      const links = Array.from(node.querySelectorAll('a[href*="/tickets/"]'));
+      const ids = [];
+      for (const link of links) {
+        const id = ticketIdFromHref(link.href || link.getAttribute("href"));
+        if (id) ids.push(id);
+      }
+      const unique = [...new Set(ids)];
+      if (unique.length === 1) return unique[0];
+
+      node = node.parentElement;
+    }
+    return null;
+  }
+
+  function getTicketId(contextEl) {
     const ticketIdFromHref = window.ExtIdParsers?.ticketIdFromHref;
     if (!ticketIdFromHref) return "auto_" + Date.now();
+
+    const fromContext = getTicketIdFromContext(contextEl);
+    if (fromContext) return fromContext;
     const iconLink = document.querySelector(SEL_TICKET_LINK_ICON);
     let id = ticketIdFromHref(iconLink?.href || iconLink?.getAttribute("href"));
     if (id) return id;
@@ -110,6 +138,7 @@
     getOrderIdFromDOM,
     queryTicketHeaderLink,
     resolveAbsoluteTicketHref,
+    getTicketIdFromContext,
     getTicketId,
     getCurrentTicketLinkUrl
   };

@@ -1,8 +1,12 @@
 {
   "manifest_version": 3,
   "name": "Reply Click Tracker",
-  "version": "1.0.1",
-  "permissions": ["storage", "tabs", "downloads"],
+  "version": "4.0.6",
+  "permissions": [
+    "storage",
+    "tabs",
+    "downloads"
+  ],
   "host_permissions": [
     "https://iap-support.babylone.joom.it/*",
     "https://babylone.joom.it/*",
@@ -11,8 +15,12 @@
     "https://api-support.joom.it/*"
   ],
   "options_page": "settings.html",
-  "background": { "service_worker": "background.js" },
-  "action": { "default_popup": "popup.html" },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
   "content_scripts": [
     {
       "matches": [
@@ -20,7 +28,9 @@
         "https://iap-support.babylone.joom.it/*",
         "https://support.joom.it/*"
       ],
-      "css": ["content-styles.css"],
+      "css": [
+        "content-styles.css"
+      ],
       "js": [
         "vendor/libphonenumber-js.min.js",
         "content/utils/id-parsers.js",
@@ -28,11 +38,14 @@
         "content/utils/sheet-utils.js",
         "content/utils/ticket-order-locators.js",
         "content/utils/api-helpers.js",
+        "content/utils/locale.js",
         "content/features/media-picker.js",
         "content/features/order-flags.js",
         "content/features/tracking.js",
+        "content/features/navbar-stats.js",
         "content/features/order-details-enhancements.js",
         "content/features/merchant-charity.js",
+        "content/features/agent-info.js",
         "content.js"
       ],
       "run_at": "document_idle",

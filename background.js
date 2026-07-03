@@ -2,13 +2,18 @@
 const HOUR_MS = 3600_000;
 const COOLDOWN_MS = 180_000;
 const DOUBLE_GUARD_MS = 800;
-const MAX_AGE_DAYS = 30;
+const MAX_AGE_DAYS = 14;
 
 chrome.runtime.onInstalled.addListener(() => {
   chrome.action.setBadgeBackgroundColor({ color: "#4b5563" });
 });
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+
+  if (msg?.type === "HEALTH_PING") {
+    sendResponse({ ok: true });
+    return;
+  }
 
   if (msg?.type === "DOWNLOAD_URLS") {
     const urls = Array.isArray(msg.urls) ? msg.urls.filter(Boolean) : [];

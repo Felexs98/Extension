@@ -131,6 +131,14 @@
             color: var(--text);
         }
 
+        /* The ".languages-header span" rule above also sizes/weights this toggle;
+           override it so it matches ".toggle-doubleorigin" (accent, 13px, normal). */
+        .languages-header .toggle-languages {
+            color: var(--accent);
+            font-size: 13px;
+            font-weight: 400;
+        }
+
         .toggle-languages {
             cursor: pointer;
             color: var(--accent);
@@ -296,17 +304,27 @@
         }
 
         .doubleorigin-block {
-            margin-top: 10px;
-            padding: 10px 12px;
+            margin-top: 16px;
+            padding: 12px 12px 14px;
             border: 1px solid var(--border);
             border-radius: 10px;
-            background: #fff;
+            background: var(--card-bg);
         }
 
         .doubleorigin-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+
+        /* Match the block title to other section titles (dark, 14px) — the
+           India/Turkey sub-labels inside the container stay gray. Needs the
+           extra .doubleorigin-block qualifier to outrank ".doubleorigin-block
+           .sub-label" defined later in this stylesheet. */
+        .doubleorigin-block .doubleorigin-header .sub-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
         }
 
         .toggle-doubleorigin {
@@ -375,25 +393,77 @@
         .time-reset-toggle .mode-text.active {
             color: #111827;
         }
+
+        .settings-subtle-row {
+            margin: 10px 0 0;
+            text-align: center;
+        }
+
+        .settings-subtle-btn {
+            appearance: none;
+            border: 0;
+            background: none;
+            padding: 0;
+            font: inherit;
+            font-size: 11px;
+            line-height: 1.3;
+            color: #9ca3af;
+            cursor: pointer;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+
+        .settings-subtle-btn:hover {
+            color: #6b7280;
+        }
+
+        .settings-subtle-btn:disabled {
+            opacity: 0.55;
+            cursor: default;
+            text-decoration: none;
+        }
+
+        .settings-subtle-sep {
+            color: #d1d5db;
+            font-size: 11px;
+            user-select: none;
+        }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>Settings</h2>
-    <p class="hint">Quick toggles and language hiding in one place.</p>
+    <h2 data-i18n="settings.title">Settings</h2>
+    <p class="hint" data-i18n="settings.hint">Quick toggles and language hiding in one place.</p>
+
+    <div class="setting" style="margin-bottom:12px;">
+        <span class="label" data-i18n="language">Language</span>
+        <select id="uiLangSelect" style="border:1px solid #d1d5db;border-radius:8px;padding:6px 10px;font-size:13px;background:#fff;cursor:pointer;">
+            <option value="auto" data-i18n="langAuto">Auto</option>
+            <option value="en">English</option>
+            <option value="ru">Русский</option>
+        </select>
+    </div>
 
     <div class="settings-grid">
         <div class="setting">
-            <span class="label">Click tracking</span>
+            <span class="label" data-i18n="clickTracking">Click tracking</span>
             <label class="switch">
                 <input type="checkbox" id="trackingEnabled">
                 <span class="slider"></span>
             </label>
         </div>
 
+        <div class="setting" id="fraudTrackingRow">
+            <span class="label" data-i18n="fraudTracking">Fraud (suspicious)</span>
+            <label class="switch">
+                <input type="checkbox" id="fraudTrackingEnabled">
+                <span class="slider"></span>
+            </label>
+        </div>
+
         <div class="setting" id="autoPauseRow">
-            <span class="label">Auto pause by agent status</span>
+            <span class="label" data-i18n="autoPause">Auto pause by agent status</span>
             <label class="switch">
                 <input type="checkbox" id="statusModeAuto">
                 <span class="slider"></span>
@@ -401,19 +471,19 @@
         </div>
 
         <div class="setting" id="totalTodayRow">
-            <span class="label">Total Today reset by MSK</span>
+            <span class="label" data-i18n="totalTodayMsk">Total Today reset by MSK</span>
             <div class="time-reset-toggle">
-                <span class="mode-text active" id="totalTodayLocalLabel">Local</span>
+                <span class="mode-text active" id="totalTodayLocalLabel" data-i18n="local">Local</span>
                 <label class="switch">
                     <input type="checkbox" id="totalTodayByMsk">
                     <span class="slider"></span>
                 </label>
-                <span class="mode-text" id="totalTodayMskLabel">MSK</span>
+                <span class="mode-text" id="totalTodayMskLabel" data-i18n="msk">MSK</span>
             </div>
         </div>
 
         <div class="setting">
-            <span class="label">Show merchant contacts</span>
+            <span class="label" data-i18n="showContacts">Show merchant contacts</span>
             <label class="switch">
                 <input type="checkbox" id="showContacts">
                 <span class="slider"></span>
@@ -421,7 +491,7 @@
         </div>
 
         <div class="setting">
-            <span class="label">Hide system messages</span>
+            <span class="label" data-i18n="hideSystem">Hide system messages</span>
             <label class="switch">
                 <input type="checkbox" id="hideSystem">
                 <span class="slider"></span>
@@ -430,7 +500,7 @@
 
         <div class="setting">
             <div style="display:flex;justify-content:space-between;align-items:center;width:100%;gap:10px;">
-                <span class="label">Attachment</span>
+                <span class="label" data-i18n="attachment">Attachment</span>
                 <label class="switch">
                     <input type="checkbox" id="attachmentButtonEnabled">
                     <span class="slider"></span>
@@ -439,7 +509,7 @@
         </div>
 
         <div class="setting">
-            <span class="label">Platform</span>
+            <span class="label" data-i18n="platform">Platform</span>
             <label class="switch">
                 <input type="checkbox" id="scopeEnabled">
                 <span class="slider"></span>
@@ -447,7 +517,7 @@
         </div>
 
         <div class="setting">
-            <span class="label">JL weights / order #</span>
+            <span class="label" data-i18n="jlWeights">JL weights / order #</span>
             <label class="switch">
                 <input type="checkbox" id="jlOrderWeightsEnabled">
                 <span class="slider"></span>
@@ -455,7 +525,7 @@
         </div>
 
         <div class="setting">
-            <span class="label">DoubleOrigin</span>
+            <span class="label" data-i18n="doubleOrigin">DoubleOrigin</span>
             <label class="switch">
                 <input type="checkbox" id="doubleOriginEnabled">
                 <span class="slider"></span>
@@ -463,7 +533,7 @@
         </div>
 
         <div class="setting">
-            <span class="label">Charity [REST]</span>
+            <span class="label" data-i18n="charityRest">Charity [REST]</span>
             <label class="switch">
                 <input type="checkbox" id="charityRestEnabled">
                 <span class="slider"></span>
@@ -471,7 +541,7 @@
         </div>
 
         <div class="setting">
-            <span class="label">Product sizes</span>
+            <span class="label" data-i18n="productSizes">Product sizes</span>
             <label class="switch">
                 <input type="checkbox" id="sizeTooltipEnabled">
                 <span class="slider"></span>
@@ -482,18 +552,18 @@
 
     <div class="doubleorigin-block" id="doubleOriginOverridesBlock">
         <div class="doubleorigin-header">
-            <p class="sub-label" style="margin:0;">DoubleOrigin merchant overrides</p>
-            <span class="toggle-doubleorigin" id="toggleDoubleOrigin">Show</span>
+            <p class="sub-label" style="margin:0;" data-i18n="doubleOriginOverrides">DoubleOrigin merchant overrides</p>
+            <span class="toggle-doubleorigin" id="toggleDoubleOrigin" data-i18n="show">Show</span>
         </div>
         <div class="doubleorigin-container" id="doubleOriginContainer">
-            <p class="sub-label">India Merchants</p>
+            <p class="sub-label" data-i18n="indiaMerchants">India Merchants</p>
             <input
                 type="text"
                 id="doubleOriginIndiaMerchants"
                 class="doubleorigin-input"
                 placeholder="IndiaMerchant1, IndiaMerchant2"
             >
-            <p class="sub-label">Turkey Merchants</p>
+            <p class="sub-label" data-i18n="turkeyMerchants">Turkey Merchants</p>
             <input
                 type="text"
                 id="doubleOriginTurkeyMerchants"
@@ -505,17 +575,26 @@
 
     <div class="languages-block">
         <div class="languages-header">
-            <span>Hide translate languages</span>
-            <span class="toggle-languages" id="toggleLanguages">Show</span>
+            <span data-i18n="hideTranslate">Hide translate languages</span>
+            <span class="toggle-languages" id="toggleLanguages" data-i18n="show">Show</span>
         </div>
         <div class="languages-container" id="languagesContainer">
-            <input type="text" class="language-search" id="languageSearch" placeholder="Search languages...">
+            <input type="text" class="language-search" id="languageSearch" placeholder="Search languages..." data-i18n-ph="searchLanguages">
             <div class="languages-grid" id="languagesGrid"></div>
         </div>
     </div>
 
+    <p class="settings-subtle-row" id="clearTodayRow" hidden>
+        <button type="button" id="clearTodayBtn" class="settings-subtle-btn" data-i18n="clearTodayStats">Reset today's count</button>
+    </p>
+
+    <p class="settings-subtle-row">
+        <button type="button" id="openSessionChartBtn" class="settings-subtle-btn" data-i18n="openSessionChart">Session chart (test)</button>
+    </p>
+
 </div>
 
+<script src="i18n.js"></script>
 <script src="settings.js"></script>
 
 </body>

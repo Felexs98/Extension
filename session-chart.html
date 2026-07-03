@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Session chart</title>
+  <link rel="stylesheet" href="session-chart.css">
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1 data-i18n="chartTitle">Session timeline (test)</h1>
+      <p data-i18n="chartHint">Replies and idle gaps since the current tracker session started.</p>
+    </header>
+
+    <div id="summary" class="summary hidden"></div>
+
+    <div id="chartWrap" class="chart-wrap hidden">
+      <div class="chart-controls">
+        <label class="chart-zoom" for="chartZoom">
+          <span data-i18n="chartZoom">Scale (auto)</span>
+          <input type="range" id="chartZoom" value="1" aria-valuemin="1" aria-valuemax="20">
+          <span id="chartZoomVal" class="chart-zoom-val">1×</span>
+        </label>
+      </div>
+      <div id="chartScroll" class="chart-scroll">
+        <svg id="timeline" role="img" aria-label="Session timeline"></svg>
+      </div>
+      <div class="legend">
+        <span><i class="sw-session"></i><span data-i18n="chartLegendSession">Work session</span></span>
+        <span><i class="sw-reply"></i><span data-i18n="chartLegendReply">Reply</span></span>
+        <span><i class="sw-gap"></i><span data-i18n="chartLegendGap">Gap between replies</span></span>
+        <span><i class="sw-pause"></i><span data-i18n="chartLegendPause">Pause</span></span>
+        <span class="legend-hint" data-i18n="chartScrollHint">Drag the timeline to pan</span>
+      </div>
+    </div>
+
+    <div id="gapList" class="gap-list hidden"></div>
+    <p id="empty" class="empty hidden" data-i18n="chartNoSession">No active session — open popup on Babylone first.</p>
+  </div>
+
+  <script src="i18n.js"></script>
+  <script src="session-chart.js"></script>
+</body>
+</html>

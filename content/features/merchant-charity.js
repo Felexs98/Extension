@@ -1,6 +1,7 @@
 (function () {
   let deps = null;
   let merchantObserver = null;
+  const tr = (en, ru) => (window.ExtLocale && window.ExtLocale.pick) ? window.ExtLocale.pick(en, ru) : en;
 
   function createSafeLine(label, value, copyOnClick = false) {
     const wrap = document.createElement("div");
@@ -14,7 +15,7 @@
     wrap.appendChild(span);
     if (copyOnClick) {
       wrap.style.cursor = "pointer";
-      wrap.title = "Click to copy";
+      wrap.title = tr("Click to copy", "Нажмите, чтобы скопировать");
       wrap.style.transition = "background-color 0.18s ease, transform 0.12s ease";
       wrap.style.borderRadius = "6px";
       wrap.style.padding = "2px 4px";
@@ -27,7 +28,7 @@
           const prevTitle = wrap.title;
           wrap.style.backgroundColor = "rgba(34, 197, 94, 0.18)";
           wrap.style.transform = "scale(0.995)";
-          wrap.title = "Copied";
+          wrap.title = tr("Copied", "Скопировано");
           setTimeout(() => {
             wrap.style.backgroundColor = prevBg;
             wrap.style.transform = "";
@@ -43,7 +44,7 @@
     const wrap = document.createElement("div");
     wrap.className = "merchant-line";
     const b = document.createElement("b");
-    b.textContent = "Return Address: ";
+    b.textContent = tr("Return Address: ", "Адрес возврата: ");
     b.style.marginRight = "6px";
     const span = document.createElement("span");
     const full = String(value || "");
@@ -57,7 +58,7 @@
       telEl.textContent = telSuffix;
       telEl.style.cursor = "pointer";
       telEl.style.textDecoration = "underline";
-      telEl.title = "Click to copy phone";
+      telEl.title = tr("Click to copy phone", "Скопировать телефон");
       telEl.addEventListener("click", async e => {
         e.preventDefault();
         e.stopPropagation();
@@ -66,7 +67,7 @@
           const prevBg = telEl.style.backgroundColor;
           const prevTitle = telEl.title;
           telEl.style.backgroundColor = "rgba(34, 197, 94, 0.18)";
-          telEl.title = "Copied";
+          telEl.title = tr("Copied", "Скопировано");
           setTimeout(() => {
             telEl.style.backgroundColor = prevBg;
             telEl.title = prevTitle;
@@ -175,7 +176,7 @@
 
       const btn = document.createElement("button");
       btn.className = "check-merchant-btn charity-action-btn";
-      btn.textContent = "Check merchant contacts";
+      btn.textContent = tr("Check merchant contacts", "Проверить контакты продавца");
 
       const charityBtn = document.createElement("button");
       charityBtn.className = "merchant-charity-btn charity-action-btn";
@@ -187,7 +188,7 @@
 
       btn.addEventListener("click", async () => {
         infoBox.style.display = "block";
-        infoBox.textContent = "Loading merchant data...";
+        infoBox.textContent = tr("Loading merchant data...", "Загрузка данных продавца...");
         try {
           const merchant = await loadMerchantData(merchantId);
           if (!merchant) throw new Error("Merchant not found");
@@ -207,14 +208,14 @@
           ].filter(Boolean);
           infoBox.innerHTML = "";
           infoBox.append(
-            createTitleLine("Public Info"),
-            createSafeLine("Email", email, true),
-            createSafeLine("Phone", publicPhone, true),
+            createTitleLine(tr("Public Info", "Публичная информация")),
+            createSafeLine(tr("Email", "Эл. почта"), email, true),
+            createSafeLine(tr("Phone", "Телефон"), publicPhone, true),
             createEmptyLine(),
             createReturnAddressLine(addressParts.join(", "), returnPhone)
           );
         } catch (err) {
-          infoBox.textContent = "Error: " + err.message;
+          infoBox.textContent = tr("Error: ", "Ошибка: ") + err.message;
         }
       });
 
@@ -253,12 +254,12 @@
       ["", "PT", "AT", "CH", "PL", "UK", "CA", "AU", "IE"].forEach(code => {
         const opt = document.createElement("option");
         opt.value = code;
-        opt.textContent = code || "Select country";
+        opt.textContent = code || tr("Select country", "Выберите страну");
         countrySelect.appendChild(opt);
       });
       const gmvInput = document.createElement("input");
       gmvInput.type = "text";
-      gmvInput.placeholder = "e.g. 1234.56";
+      gmvInput.placeholder = tr("e.g. 1234.56", "напр. 1234.56");
       gmvInput.className = "charity-input";
       const dateInput = document.createElement("input");
       dateInput.type = "date";
@@ -280,13 +281,13 @@
       linkInput.className = "charity-input";
       const trackInput = document.createElement("input");
       trackInput.type = "text";
-      trackInput.placeholder = "Track number";
+      trackInput.placeholder = tr("Track number", "Трек-номер");
       trackInput.className = "charity-input";
-      const countryField = createField("Country", countrySelect);
+      const countryField = createField(tr("Country", "Страна"), countrySelect);
       const gmvField = createField("GMV", gmvInput);
-      const dateField = createField("Date", dateInput);
-      const linkField = createField("Link", linkInput);
-      const trackField = createField("Track", trackInput);
+      const dateField = createField(tr("Date", "Дата"), dateInput);
+      const linkField = createField(tr("Link", "Ссылка"), linkInput);
+      const trackField = createField(tr("Track", "Трек"), trackInput);
       trackField.style.display = "none";
       countrySelect.addEventListener("change", () => {
         trackField.style.display = countrySelect.value === "PT" ? "" : "none";
@@ -300,7 +301,7 @@
       const ordersContainer = document.createElement("div");
       ordersContainer.className = "charity-orders-container";
       const ordersTitle = document.createElement("div");
-      ordersTitle.textContent = "Orders in this ticket:";
+      ordersTitle.textContent = tr("Orders in this ticket:", "Заказы в этом тикете:");
       ordersTitle.className = "charity-orders-title";
       ordersContainer.appendChild(ordersTitle);
       const actionsRow = document.createElement("div");
@@ -319,8 +320,8 @@
         wrap.appendChild(span);
         return { wrap, cb };
       }
-      const profileTarget = createTargetCheckbox("Profile", true);
-      const orderTarget = createTargetCheckbox("Order", true);
+      const profileTarget = createTargetCheckbox(tr("Profile", "Профиль"), true);
+      const orderTarget = createTargetCheckbox(tr("Order", "Заказ"), true);
       targetsRow.appendChild(profileTarget.wrap);
       targetsRow.appendChild(orderTarget.wrap);
 
@@ -380,11 +381,11 @@
 
       const cancelBtn = document.createElement("button");
       cancelBtn.type = "button";
-      cancelBtn.textContent = "Cancel";
+      cancelBtn.textContent = tr("Cancel", "Отмена");
       cancelBtn.className = "charity-action-btn charity-secondary-btn charity-secondary-btn-cancel";
       const saveBtn = document.createElement("button");
       saveBtn.type = "button";
-      saveBtn.textContent = "Create";
+      saveBtn.textContent = tr("Create", "Создать");
       saveBtn.className = "charity-action-btn charity-secondary-btn charity-secondary-btn-save";
       cancelBtn.onclick = () => {
         charityPopup.style.display = "none";

@@ -1,4 +1,5 @@
 (function () {
+  const tr = (en, ru) => (window.ExtLocale && window.ExtLocale.pick) ? window.ExtLocale.pick(en, ru) : en;
   function init(deps = {}) {
     const sendRuntimeMessageAsync = deps.sendRuntimeMessageAsync;
     if (typeof sendRuntimeMessageAsync !== "function") return;
@@ -94,11 +95,11 @@
     titleRow.style.cssText = "display:flex;align-items:center;gap:10px;min-width:0;";
 
     const title = document.createElement("div");
-    title.textContent = "Select images/videos to copy links";
+    title.textContent = tr("Select images/videos to copy links", "Выберите изображения/видео для копирования ссылок");
     title.style.cssText = "font-size:14px;font-weight:600;white-space:nowrap;";
 
     const status = document.createElement("div");
-    status.textContent = "Not scanned yet";
+    status.textContent = tr("Not scanned yet", "Ещё не отсканировано");
     status.style.cssText = "font-size:12px;opacity:0.85;white-space:nowrap;";
 
     titleRow.appendChild(title);
@@ -108,23 +109,23 @@
     filters.style.cssText = "display:flex;gap:10px;flex-wrap:wrap;align-items:center;";
 
     const filterLabel = document.createElement("div");
-    filterLabel.textContent = "Filter:";
+    filterLabel.textContent = tr("Filter:", "Фильтр:");
     filterLabel.style.cssText = "font-size:12px;opacity:0.8;padding:0 2px;";
 
-    const btnAll = createSecondaryBtn("View: All");
-    const btnImages = createSecondaryBtn("Images");
-    const btnVideos = createSecondaryBtn("Videos");
-    const btnSelected = createSecondaryBtn("Selected");
-    const btnUnloaded = createSecondaryBtn("Unloaded");
-    const btnNotes = createSecondaryBtn("Notes");
-    const btnUser = createSecondaryBtn("User");
-    const btnAgent = createSecondaryBtn("Agent");
-    const btnUserPhotos = createSecondaryBtn("User photos");
-    const btnUserVideos = createSecondaryBtn("User videos");
-    const btnAgentPhotos = createSecondaryBtn("Agent photos");
-    const btnAgentVideos = createSecondaryBtn("Agent videos");
-    const btnNotesPhotos = createSecondaryBtn("Notes photos");
-    const btnNotesVideos = createSecondaryBtn("Notes videos");
+    const btnAll = createSecondaryBtn(tr("View: All", "Вид: Все"));
+    const btnImages = createSecondaryBtn(tr("Images", "Изображения"));
+    const btnVideos = createSecondaryBtn(tr("Videos", "Видео"));
+    const btnSelected = createSecondaryBtn(tr("Selected", "Выбранные"));
+    const btnUnloaded = createSecondaryBtn(tr("Unloaded", "Незагруженные"));
+    const btnNotes = createSecondaryBtn(tr("Notes", "Заметки"));
+    const btnUser = createSecondaryBtn(tr("User", "Пользователь"));
+    const btnAgent = createSecondaryBtn(tr("Agent", "Агент"));
+    const btnUserPhotos = createSecondaryBtn(tr("User photos", "Фото пользователя"));
+    const btnUserVideos = createSecondaryBtn(tr("User videos", "Видео пользователя"));
+    const btnAgentPhotos = createSecondaryBtn(tr("Agent photos", "Фото агента"));
+    const btnAgentVideos = createSecondaryBtn(tr("Agent videos", "Видео агента"));
+    const btnNotesPhotos = createSecondaryBtn(tr("Notes photos", "Фото из заметок"));
+    const btnNotesVideos = createSecondaryBtn(tr("Notes videos", "Видео из заметок"));
     const btnPdf = createSecondaryBtn("PDF");
 
     filters.appendChild(filterLabel);
@@ -150,7 +151,7 @@
     const closeBtn = document.createElement("button");
     closeBtn.type = "button";
     closeBtn.textContent = "x";
-    closeBtn.setAttribute("aria-label", "Close");
+    closeBtn.setAttribute("aria-label", tr("Close", "Закрыть"));
     closeBtn.style.cssText = "appearance:none;border:0;width:34px;height:34px;border-radius:999px;background:rgba(255,255,255,0.14);color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:0 0 auto;";
 
     header.appendChild(headerLeft);
@@ -173,20 +174,20 @@
     const footerRight = document.createElement("div");
     footerRight.style.cssText = "display:flex;gap:8px;align-items:center;flex-wrap:wrap;";
 
-    const btnScan = createPrimaryBtn("Scan media");
+    const btnScan = createPrimaryBtn(tr("Scan media", "Сканировать медиа"));
     btnScan.style.background = "#FFD60A";
     btnScan.style.color = "#111";
     btnScan.style.fontWeight = "700";
     btnScan.style.border = "1px solid rgba(0,0,0,0.15)";
     btnScan.style.boxShadow = "0 10px 24px rgba(255,214,10,0.35), 0 8px 18px rgba(0,0,0,0.25)";
 
-    const btnSelectAll = createPrimaryBtn("Select all");
-    const btnSelectNone = createPrimaryBtn("Select none");
-    const btnOnlyImages = createPrimaryBtn("Only images (0)");
-    const btnOnlyVideos = createPrimaryBtn("Only videos (0)");
-    const btnGetLinks = createPrimaryBtn("Get links");
-    const btnCopyLinks = createPrimaryBtn("Copy in buffer");
-    const btnDownloadLinks = createPrimaryBtn("Download");
+    const btnSelectAll = createPrimaryBtn(tr("Select all", "Выбрать все"));
+    const btnSelectNone = createPrimaryBtn(tr("Select none", "Снять выбор"));
+    const btnOnlyImages = createPrimaryBtn(tr("Only images (0)", "Только изображения (0)"));
+    const btnOnlyVideos = createPrimaryBtn(tr("Only videos (0)", "Только видео (0)"));
+    const btnGetLinks = createPrimaryBtn(tr("Get links", "Получить ссылки"));
+    const btnCopyLinks = createPrimaryBtn(tr("Copy in buffer", "Копировать в буфер"));
+    const btnDownloadLinks = createPrimaryBtn(tr("Download", "Скачать"));
     btnGetLinks.style.background = "rgba(255,255,255,0.22)";
     btnCopyLinks.style.background = "rgba(255,255,255,0.22)";
     btnDownloadLinks.style.background = "rgba(255,255,255,0.22)";
@@ -223,8 +224,8 @@
     const updateCounts = () => {
       const imgCount = state.items.filter(item => item.mediaUrl && item.type === "image").length;
       const vidCount = state.items.filter(item => item.mediaUrl && item.type === "video").length;
-      btnOnlyImages.textContent = "Only images (" + imgCount + ")";
-      btnOnlyVideos.textContent = "Only videos (" + vidCount + ")";
+      btnOnlyImages.textContent = tr("Only images (", "Только изображения (") + imgCount + ")";
+      btnOnlyVideos.textContent = tr("Only videos (", "Только видео (") + vidCount + ")";
     };
     const updateView = () => {
       [
@@ -312,13 +313,13 @@
 
       if (item.type === "video") {
         const videoLabel = document.createElement("div");
-        videoLabel.textContent = "VIDEO";
+        videoLabel.textContent = tr("VIDEO", "ВИДЕО");
         videoLabel.style.cssText = "position:absolute;top:8px;left:8px;padding:4px 8px;border-radius:999px;background:rgba(0,0,0,0.55);font-size:11px;border:1px solid rgba(255,255,255,0.14);";
         imgContainer.appendChild(videoLabel);
       }
       if (item.fromUser) {
         const userLabel = document.createElement("div");
-        userLabel.textContent = "User";
+        userLabel.textContent = tr("User", "Пользователь");
         userLabel.style.cssText =
           item.type === "video"
             ? "position:absolute;bottom:8px;left:8px;padding:4px 8px;border-radius:999px;background:rgba(34,197,94,0.45);font-size:11px;border:1px solid rgba(34,197,94,0.85);color:#fff;"
@@ -327,7 +328,7 @@
       }
       if (item.fromAgent) {
         const agentLabel = document.createElement("div");
-        agentLabel.textContent = "Agent";
+        agentLabel.textContent = tr("Agent", "Агент");
         agentLabel.style.cssText =
           item.type === "video"
             ? "position:absolute;bottom:8px;right:8px;padding:4px 8px;border-radius:999px;background:rgba(99,102,241,0.45);font-size:11px;border:1px solid rgba(99,102,241,0.9);color:#fff;"
@@ -336,7 +337,7 @@
       }
       if (item.fromNotes) {
         const notesLabel = document.createElement("div");
-        notesLabel.textContent = "Notes";
+        notesLabel.textContent = tr("Notes", "Заметки");
         notesLabel.style.cssText = "position:absolute;top:8px;right:8px;left:auto;padding:4px 8px;border-radius:999px;background:rgba(255,149,0,0.35);font-size:11px;border:1px solid rgba(255,149,0,0.65);color:#fff;";
         if (item.fromAgent) notesLabel.style.top = "38px";
         imgContainer.appendChild(notesLabel);
@@ -353,7 +354,7 @@
       label.style.cssText = "display:flex;align-items:center;gap:8px;padding:10px;cursor:pointer;margin-top:auto;min-width:0;";
       label.appendChild(checkbox);
       const urlText = document.createElement("div");
-      urlText.textContent = item.displayText || item.mediaUrl || "Not loaded";
+      urlText.textContent = item.displayText || item.mediaUrl || tr("Not loaded", "Не загружено");
       urlText.style.cssText = "font-size:12px;opacity:0.9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1;";
       label.appendChild(urlText);
       card.appendChild(imgContainer);
@@ -461,7 +462,7 @@
       state.scanning = true;
       setButtonsEnabled(false);
       setBtnState(btnScan, true);
-      updateStatus("Scanning...");
+      updateStatus(tr("Scanning...", "Сканирование..."));
       setScanVisuals(true);
       const scanCfg = await new Promise(resolve => chrome.storage.sync.get(["attachmentScanNotes", "attachmentScanUser", "attachmentScanPdf"], resolve));
       const elements = findMediaElements(scanCfg).filter(({ el, fromNotes, fromUser, fromAgent }) => {
@@ -523,7 +524,7 @@
       state.scanning = false;
       updateCounts();
       renderItems();
-      updateStatus("Done. Found " + state.items.filter(item => item.mediaUrl).length + "/" + state.items.length + " links");
+      updateStatus(tr("Done. Found ", "Готово. Найдено ") + state.items.filter(item => item.mediaUrl).length + "/" + state.items.length + tr(" links", " ссылок"));
       setBtnState(btnScan, false);
       setButtonsEnabled(true);
       setScanVisuals(false);
@@ -573,9 +574,9 @@
       if (!data) return;
       try {
         await navigator.clipboard.writeText(data.text);
-        updateStatus("Copied " + data.links.length + " links");
+        updateStatus(tr("Copied ", "Скопировано ") + data.links.length + tr(" links", " ссылок"));
       } catch {
-        window.prompt("Clipboard blocked. Copy manually:", data.text);
+        window.prompt(tr("Clipboard blocked. Copy manually:", "Буфер обмена заблокирован. Скопируйте вручную:"), data.text);
       }
     };
     btnCopyLinks.onclick = async () => {
@@ -583,7 +584,7 @@
         item => item.checked && item.mediaUrl && item.type === "image"
       );
       if (!selectedImages.length) {
-        updateStatus("Copy in buffer supports selected images only");
+        updateStatus(tr("Copy in buffer supports selected images only", "Копирование в буфер поддерживает только выбранные изображения"));
         return;
       }
       try {
@@ -617,18 +618,18 @@
         ]);
         updateStatus(
           selectedImages.length > 1
-            ? "Copied first image to buffer (" + selectedImages.length + " selected)"
-            : "Copied image to buffer"
+            ? tr("Copied first image to buffer (", "Скопировано первое изображение в буфер (") + selectedImages.length + tr(" selected)", " выбрано)")
+            : tr("Copied image to buffer", "Изображение скопировано в буфер")
         );
       } catch (e) {
-        updateStatus("Copy in buffer failed: " + (e?.message || "unknown error"));
+        updateStatus(tr("Copy in buffer failed: ", "Не удалось скопировать в буфер: ") + (e?.message || tr("unknown error", "неизвестная ошибка")));
       }
     };
     btnDownloadLinks.onclick = async () => {
       const data = collectSelectedLinks(true);
       if (!data) return;
       const resp = await sendRuntimeMessageAsync({ type: "DOWNLOAD_URLS", urls: data.links });
-      updateStatus(resp?.ok ? "Download started" : "Download failed: " + (resp?.error || "unknown error"));
+      updateStatus(resp?.ok ? tr("Download started", "Загрузка началась") : tr("Download failed: ", "Ошибка загрузки: ") + (resp?.error || tr("unknown error", "неизвестная ошибка")));
     };
 
     let isResizing = false;

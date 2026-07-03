@@ -11,43 +11,49 @@
 
 <main>
     <div id="trackingDisabled" class="tracking-disabled hidden">
-        <h3>Tracking disabled</h3>
-        <p>Enable tracking in settings to display metrics</p>
-        <button id="openSettingsFromDisabled">Open Settings</button>
+        <h3 data-i18n="trackingDisabled">Tracking disabled</h3>
+        <p data-i18n="trackingDisabledHint">Enable tracking in settings to display metrics</p>
+        <button id="openSettingsFromDisabled" data-i18n="openSettings">Open Settings</button>
     </div>
 
     <div id="trackingContent">
         <div class="kpi-card">
-            <div class="kpi-label">Replies per Hour</div>
+            <div class="kpi-label" data-i18n="repliesPerHour">Replies per Hour</div>
             <div id="rph" class="kpi-value">—</div>
         </div>
 
         <div class="kpi-card">
-            <div class="kpi-label">Total Today</div>
+            <div class="kpi-label" data-i18n="totalToday">Total Today</div>
             <div id="today" class="kpi-value">0</div>
         </div>
 
+        <div class="kpi-card hidden" id="fraudTodayCard">
+            <div class="kpi-label" data-i18n="fraudToday">Fraud Today</div>
+            <div id="fraudToday" class="kpi-value">0</div>
+        </div>
+
         <div class="kpi-card">
-            <div class="kpi-label">Since Start</div>
+            <div class="kpi-label" data-i18n="sinceStart">Since Start</div>
             <div id="sinceStart" class="kpi-value">0</div>
         </div>
 
         <div class="kpi-card">
-            <div class="kpi-label">Duration</div>
+            <div class="kpi-label" data-i18n="duration">Duration</div>
             <div id="dur" class="kpi-value">—</div>
             <div id="since"></div>
         </div>
 
         <div class="buttons">
-            <button id="pauseBtn">Pause</button>
+            <button id="pauseBtn" data-i18n="pause">Pause</button>
         </div>
 
-        <button id="clearBtn">Clear</button>
-        <button id="openSettings">Open Settings</button>
+        <button id="clearBtn" data-i18n="clear">Clear</button>
+        <button id="openSettings" data-i18n="openSettings">Open Settings</button>
 
     </div>
 </main>
 
+<script src="i18n.js"></script>
 <script src="popup.js"></script>
 </body>
 </html>

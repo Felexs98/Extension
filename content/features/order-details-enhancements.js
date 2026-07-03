@@ -1,6 +1,7 @@
 (function () {
   let processedPlatformContainers = new WeakSet();
   const processedSizeContainers = new WeakSet();
+  const tr = (en, ru) => (window.ExtLocale && window.ExtLocale.pick) ? window.ExtLocale.pick(en, ru) : en;
 
   function init(deps = {}) {
     const {
@@ -58,7 +59,7 @@
       tooltip.dataset.sizeTooltip = "true";
       tooltip.style.cssText = "position:absolute;background:rgb(39, 40, 48);color:rgb(255, 255, 255);padding:12px;border-radius:6px;font-size:12px;line-height:1.5;z-index:10000;box-shadow:0 4px 12px rgba(0, 0, 0, 0.3);cursor:pointer;white-space:nowrap;max-width:300px;";
       const title = document.createElement("div");
-      title.textContent = "Size: " + sizeData.sizeName;
+      title.textContent = tr("Size: ", "Размер: ") + sizeData.sizeName;
       title.style.cssText = "font-weight:600;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid rgba(255, 255, 255, 0.2);";
       tooltip.appendChild(title);
       const measures = sizeData.measures || [];
@@ -225,17 +226,35 @@
       return typeof n === "string" && n.trim() ? n.trim() : null;
     }
 
-    function appendDefinitionRow(dl, labelText, valueContent) {
+    function fillDefinitionValue(dd, valueContent) {
+      dd.replaceChildren();
+      if (typeof valueContent === "string") dd.textContent = valueContent;
+      else if (valueContent) dd.appendChild(valueContent);
+      else dd.textContent = "—";
+    }
+
+    // Upsert keyed by data-jl-key so a row is updated in place (e.g. on a live
+    // language switch) instead of duplicated when the label text changes.
+    function appendDefinitionRow(dl, labelText, valueContent, key) {
+      const existing = key ? dl.querySelector(`.jl-order-weights-row[data-jl-key="${key}"]`) : null;
+      const valueText = typeof valueContent === "string" ? valueContent : ((valueContent && valueContent.textContent) || "—");
+      if (existing) {
+        const dt = existing.querySelector("dt");
+        const dd = existing.querySelector("dd");
+        if (dt && dd && dt.textContent === labelText && dd.textContent === valueText) return;
+        if (dt) dt.textContent = labelText;
+        if (dd) fillDefinitionValue(dd, valueContent);
+        return;
+      }
       const row = document.createElement("div");
       row.className = "QC2SXR_FQamr1zhmgiQT jl-order-weights-row";
+      if (key) row.dataset.jlKey = key;
       const dt = document.createElement("dt");
       dt.className = "LopFYFidxh4rRWmRWoRO";
       dt.textContent = labelText;
       const dd = document.createElement("dd");
       dd.className = "KTfP5OLXQ1pwKnA3pnbW";
-      if (typeof valueContent === "string") dd.textContent = valueContent;
-      else if (valueContent) dd.appendChild(valueContent);
-      else dd.textContent = "—";
+      fillDefinitionValue(dd, valueContent);
       row.appendChild(dt);
       row.appendChild(dd);
       dl.appendChild(row);
@@ -243,6 +262,70 @@
 
     function hasJlRow(dl, labelText) {
       return Array.from(dl.querySelectorAll(".jl-order-weights-row dt")).some(dt => (dt.textContent || "").trim() === labelText);
+    }
+
+    function createPlatformNotice(platformText, labelText) {
+      const notice = document.createElement("div");
+      notice.className = "platform-label platform-label-notice";
+      const label = document.createElement("span");
+      label.className = "platform-label-notice__label";
+      label.textContent = labelText;
+      const value = document.createElement("span");
+      value.className = "platform-label-notice__value";
+      value.textContent = platformText;
+      notice.appendChild(label);
+      notice.appendChild(value);
+      return notice;
+    }
+
+    function getPlatformLabelText(orderPanelSection) {
+      const text = (orderPanelSection?.innerText || "").trim();
+      return text.startsWith("Заказ\n") ? "Платформа" : "Platform";
+    }
+
+    function isOrderPanelSection(el) {
+      const text = (el?.innerText || "").trim();
+      const hasOrderTitle = text.startsWith("Order\n") || text.startsWith("Заказ\n");
+      const hasAddressee = text.includes("Addressee:") || text.includes("Адресат:");
+      const hasDeliveryAddress = text.includes("Delivery address:") || text.includes("Адрес доставки:");
+      const hasShippingDetails = text.includes("Shipping details:") || text.includes("Детали доставки:");
+      return (
+        hasOrderTitle &&
+        hasAddressee &&
+        hasDeliveryAddress &&
+        hasShippingDetails
+      );
+    }
+
+    function findOrderPanelSection(container) {
+      let current = container;
+      for (let i = 0; i < 8 && current; i++, current = current.parentElement) {
+        const section = Array.from(current.children || []).find(isOrderPanelSection);
+        if (section) return section;
+      }
+      return null;
+    }
+
+    function removeLegacyPlatformRows(container) {
+      container.querySelectorAll(".platform-label:not(.platform-label-notice)").forEach(el => el.remove());
+    }
+
+    function insertPlatformNotice(container, platformText) {
+      const target = findOrderPanelSection(container) || container;
+      const labelText = getPlatformLabelText(target);
+      const existingNotice =
+        target.previousElementSibling?.classList?.contains("platform-label-notice")
+          ? target.previousElementSibling
+          : container.querySelector(":scope > .platform-label-notice");
+      if (existingNotice) {
+        existingNotice.querySelector(".platform-label-notice__label").textContent = labelText;
+        existingNotice.querySelector(".platform-label-notice__value").textContent = platformText;
+        return;
+      }
+
+      const notice = createPlatformNotice(platformText, labelText);
+      if (target.parentElement) target.parentElement.insertBefore(notice, target);
+      else container.prepend(notice);
     }
 
     async function processJlWeightsContainer(container) {
@@ -260,9 +343,12 @@
         if (measuredKg == null && orderNo) measuredKg = await loadLogisticsMeasuredWeightFromFindAll(orderNo);
         const jlDisp = formatWeightDisplayFromKg(jlKg);
         const measuredDisp = formatWeightDisplayFromKg(measuredKg);
-        if (!hasJlRow(dl, "JL product weight") && jlDisp != null) appendDefinitionRow(dl, "JL product weight", jlDisp);
-        if (!hasJlRow(dl, "Measured weight") && measuredDisp != null) appendDefinitionRow(dl, "Measured weight", measuredDisp);
-        if (!hasJlRow(dl, "JL order number") && orderNo) {
+        const lblJlWeight = tr("JL product weight", "Вес товара (JL)");
+        const lblMeasured = tr("Measured weight", "Измеренный вес");
+        const lblJlOrderNo = tr("JL order number", "Номер заказа (JL)");
+        if (jlDisp != null) appendDefinitionRow(dl, lblJlWeight, jlDisp, "jlWeight");
+        if (measuredDisp != null) appendDefinitionRow(dl, lblMeasured, measuredDisp, "measured");
+        if (orderNo) {
           const a = document.createElement("a");
           a.href = `https://support.joom.it/logistics/orders/${encodeURIComponent(orderNo)}`;
           a.target = "_blank";
@@ -270,14 +356,14 @@
           a.textContent = orderNo;
           a.style.color = "#2563eb";
           a.style.textDecoration = "underline";
-          appendDefinitionRow(dl, "JL order number", a);
+          appendDefinitionRow(dl, lblJlOrderNo, a, "jlOrderNo");
         }
       } catch {}
     }
 
     async function processPlatformContainer(container) {
       if (processedPlatformContainers.has(container)) return;
-      if (container.querySelector(".platform-label")) return;
+      removeLegacyPlatformRows(container);
       const dl = container.querySelector('dl.fDdY762K9InyWOIzQnnQ');
       if (!dl) return;
       let orderInfo = getOrderIdFromURL() || getOrderIdFromDOM(container);
@@ -296,17 +382,7 @@
           processedPlatformContainers.add(container);
           return;
         }
-        const platformDiv = document.createElement("div");
-        platformDiv.className = "QC2SXR_FQamr1zhmgiQT platform-label";
-        const dt = document.createElement("dt");
-        dt.className = "LopFYFidxh4rRWmRWoRO";
-        dt.textContent = "Platform:";
-        const dd = document.createElement("dd");
-        dd.className = "KTfP5OLXQ1pwKnA3pnbW";
-        dd.textContent = platformText;
-        platformDiv.appendChild(dt);
-        platformDiv.appendChild(dd);
-        dl.appendChild(platformDiv);
+        insertPlatformNotice(container, platformText);
         processedPlatformContainers.add(container);
       } catch {}
     }
